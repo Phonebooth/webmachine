@@ -93,4 +93,7 @@ maybe_log(_Code, _Req, {error, {exit, normal, _Stack}}) ->
     ok;
 maybe_log(Code, Req, Reason) when Code >= 500 ->
     {Path,_} = Req:path(),
-    error_logger:error_msg("webmachine error: path=~p~n~p~n", [Path, Reason]).
+    error_logger:error_msg("webmachine error: path=~p~n~p~n", [Path, Reason]);
+maybe_log(_, _, _) ->
+    % response code is not a 5xx server side error so don't log it
+    ok.
