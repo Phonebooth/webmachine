@@ -253,7 +253,7 @@ call({send_response, {Code, ReasonPhrase}=CodeAndReason}, Req) when is_integer(C
                 send_response(CodeAndReason, Req)
         end,
     LogData = NewState#wm_reqstate.log_data,
-    NewLogData = LogData#wm_log_data{finish_time=now()},
+    NewLogData = LogData#wm_log_data{finish_time=os:timestamp()},
     {Reply, NewState#wm_reqstate{log_data=NewLogData}};
 call(resp_body, {?MODULE, ReqState}) ->
     {wrq:resp_body(ReqState#wm_reqstate.reqdata), ReqState};
@@ -624,7 +624,7 @@ parts_to_body(BodyList, Size, Req) when is_list(BodyList) ->
             {CT, _} ->
                 CT
         end,
-    Boundary = mochihex:to_hex(crypto:rand_bytes(8)),
+    Boundary = mochihex:to_hex(crypto:strong_rand_bytes(8)),
     HeaderList = [{"Content-Type",
                    ["multipart/byteranges; ",
                     "boundary=", Boundary]}],
