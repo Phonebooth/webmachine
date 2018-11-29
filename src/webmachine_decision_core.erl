@@ -23,6 +23,7 @@
 -author('Bryan Fink <bryan@basho.com>').
 -export([handle_request/2]).
 -export([do_log/1]).
+-compile(nowarn_deprecated_function).
 -include("webmachine_logger.hrl").
 
 handle_request(Resource, ReqState) ->

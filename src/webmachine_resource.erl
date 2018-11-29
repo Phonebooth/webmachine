@@ -20,6 +20,8 @@
 -export([new/4, wrap/2, wrap/3]).
 -export([do/3,log_d/2,stop/1]).
 
+-compile(nowarn_deprecated_function).
+
 -include("wm_resource.hrl").
 -include("wm_reqdata.hrl").
 -include("wm_reqstate.hrl").
