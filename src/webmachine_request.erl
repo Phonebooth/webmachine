@@ -15,28 +15,6 @@
 %%    See the License for the specific language governing permissions and
 %%    limitations under the License.
 
-%% @doc Webmachine HTTP Request Abstraction. The functions in this module
-%% can be invoked using either parameterized module syntax or regular
-%% invocation syntax. Since the Ericsson OTP team is removing the
-%% parameterized module syntax in version R16, we encourage you to write
-%% your applications using regular function syntax.
-%%
-%% To use parameterized module syntax, you create an instance and then
-%% invoke functions on that instance, like this:
-%%
-%% <pre><code>
-%%   Req = webmachine_request:new(ReqState),
-%%   Result = Req:some_fun(Args),
-%% </code></pre>
-%%
-%% where `ReqState' is an instance of a `#wm_reqstate' record. The runtime
-%% then ensures the `ReqState' variable is implicitly passed to each
-%% function invoked through the `Req' instance.
-%%
-%% To call functions using regular syntax, simply explicitly pass the
-%% `ReqState' variable yourself; note there's no need to call
-%% `webmachine_request:new/1' to perform regular invocations.
-
 -module(webmachine_request).
 -author('Justin Sheehy <justin@basho.com>').
 -author('Andy Gross <andy@basho.com>').

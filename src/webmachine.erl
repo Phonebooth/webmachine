@@ -37,26 +37,27 @@ stop() ->
     application:stop(webmachine).
 
 new_request(mochiweb, Request) ->
-    Method = Request:get(method),
-    Scheme = Request:get(scheme),
-    Version = Request:get(version),
+    RequestModule = element(1, Request),
+    Method = RequestModule:get(method, Request),
+    Scheme = RequestModule:get(scheme, Request),
+    Version = RequestModule:get(version, Request),
     {Headers, RawPath} = case application:get_env(webmachine, rewrite_module) of
         {ok, RewriteMod} ->
             do_rewrite(RewriteMod,
                        Method,
                        Scheme,
                        Version,
-                       Request:get(headers),
-                       Request:get(raw_path));
+                       RequestModule:get(headers, Request),
+                       RequestModule:get(raw_path, Request));
         undefined ->
-            {Request:get(headers), Request:get(raw_path)}
+            {RequestModule:get(headers, Request), RequestModule:get(raw_path, Request)}
     end,
-    Socket = Request:get(socket),
+    Socket = RequestModule:get(socket, Request),
     InitState = #wm_reqstate{socket=Socket,
                           reqdata=wrq:create(Method,Scheme,Version,RawPath,Headers)},
 
     InitReq = {webmachine_request,InitState},
-    {Peer, ReqState} = InitReq:get_peer(),
+    {Peer, ReqState} = webmachine_request:get_peer(InitReq),
     PeerState = ReqState#wm_reqstate{reqdata=wrq:set_peer(Peer,
                                               ReqState#wm_reqstate.reqdata)},
     LogData = #wm_log_data{start_time=os:timestamp(),

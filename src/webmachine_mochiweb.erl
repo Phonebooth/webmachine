@@ -49,8 +49,8 @@ loop(Name, MochiReq) ->
                [H|_] -> H;
                [] -> []
            end,
-    {Path, _} = Req:path(),
-    {RD, _} = Req:get_reqdata(),
+    {Path, _} = webmachine_request:path(Req),
+    {RD, _} = webmachine_request:get_reqdata(Req),
 
     %% Run the dispatch code, catch any errors...
     try webmachine_dispatcher:dispatch(Host, Path, DispatchList, RD) of
@@ -61,13 +61,13 @@ loop(Name, MochiReq) ->
         {Mod, ModOpts, HostTokens, Port, PathTokens, Bindings,
          AppRoot, StringPath} ->
             BootstrapResource = webmachine_resource:new(x,x,x,x),
-            {ok,RS1} = Req:load_dispatch_data(Bindings,HostTokens,Port,
-                                              PathTokens,AppRoot,StringPath),
+            {ok,RS1} = webmachine_request:load_dispatch_data(Bindings,HostTokens,Port,
+                                              PathTokens,AppRoot,StringPath,Req),
             XReq1 = {webmachine_request,RS1},
             try
-                {ok, Resource} = BootstrapResource:wrap(Mod, ModOpts),
-                {ok,RS2} = XReq1:set_metadata('resource_module',
-                                              resource_module(Mod, ModOpts)),
+                {ok, Resource} = webmachine_resource:wrap(Mod, ModOpts, BootstrapResource),
+                {ok,RS2} = webmachine_request:set_metadata('resource_module',
+                                              resource_module(Mod, ModOpts), XReq1),
                 webmachine_decision_core:handle_request(Resource, RS2)
             catch
                 error:Error ->
@@ -83,11 +83,11 @@ handle_error(Code, Error, Req) ->
     {ErrorHTML,ReqState1} =
         ErrorHandler:render_error(Code, Req, Error),
     Req1 = {webmachine_request,ReqState1},
-    {ok,ReqState2} = Req1:append_to_response_body(ErrorHTML),
+    {ok,ReqState2} = webmachine_request:append_to_response_body(ErrorHTML, Req1),
     Req2 = {webmachine_request,ReqState2},
-    {ok,ReqState3} = Req2:send_response(Code),
+    {ok,ReqState3} = webmachine_request:send_response(Code, Req2),
     Req3 = {webmachine_request,ReqState3},
-    {LogData,_ReqState4} = Req3:log_data(),
+    {LogData,_ReqState4} = webmachine_request:log_data(Req3),
     spawn(webmachine_log, log_access, [LogData]).
 
 get_wm_option(OptName, {WMOptions, OtherOptions}) ->
@@ -139,7 +139,7 @@ application_set_unless_env(App, Var, Value) ->
     end.
 
 host_headers(Req) ->
-    [ V || {V,_ReqState} <- [Req:get_header_value(H)
+    [ V || {V,_ReqState} <- [webmachine_request:get_header_value(H, Req)
                              || H <- ["x-forwarded-host",
                                       "x-forwarded-server",
                                       "host"]],

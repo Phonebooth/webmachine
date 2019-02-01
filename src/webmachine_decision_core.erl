@@ -40,13 +40,13 @@ handle_request(Resource, ReqState) ->
 wrcall(X) ->
     RS0 = get(reqstate),
     Req = webmachine_request:new(RS0),
-    {Response, RS1} = Req:call(X),
+    {Response, RS1} = webmachine_request:call(X, Req),
     put(reqstate, RS1),
     Response.
 
 resource_call(Fun) ->
     Resource = get(resource),
-    {Reply, NewResource, NewRS} = Resource:do(Fun,get()),
+    {Reply, NewResource, NewRS} = webmachine_resource:do(Fun,get(),Resource),
     put(resource, NewResource),
     put(reqstate, NewRS),
     Reply.
@@ -98,7 +98,7 @@ finish_response({Code, _}=CodeAndPhrase, Resource, EndTime) ->
                                    end_time=EndTime,
                                    notes=Notes},
     spawn(fun() -> do_log(LogData) end),
-    Resource:stop().
+    webmachine_resource:stop(Resource).
 
 error_response(Reason) ->
     error_response(500, Reason).
@@ -154,7 +154,7 @@ do_log(LogData) ->
 
 log_decision(DecisionID) ->
     Resource = get(resource),
-    Resource:log_d(DecisionID).
+    webmachine_resource:log_d(DecisionID, Resource).
 
 %% "Service Available"
 decision(v3b13) ->
